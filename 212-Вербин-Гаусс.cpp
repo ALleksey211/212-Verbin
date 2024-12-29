@@ -889,33 +889,46 @@ class Control{
         file.close();
     }
 
-  void bmp_read(Field& field,std::string file_name) {
-     std::ifstream bmpFile(file_name, std::ios::binary);
-     if (!bmpFile) {
-         std::cout << "Failed to open BMP file." << std::endl;
-         //logger.logMessage("Failed to open BMP file.", b);
-         return;
-     }
-     // Читаем заголовок BMP
-     unsigned char header[54];
-     bmpFile.read(reinterpret_cast<char*>(header), 54);
-     // Получаем ширину и высоту изображения
-     int width = header[18] | (header[19] << 8) | (header[20] << 16) | (header[21] << 24);
-     int height = header[22] | (header[23] << 8) | (header[24] << 16) | (header[25] << 24);
+    void READ_BMP()(Field& field){
+        std::string file_name;
+        log.message_log("READ BMP:");
+        std::cout<<"Enter file name:";
+        std::sin>>file_name;
+        std::ifstream bmpFile(file_name, std::ios::binary);
+        if (!bmpFile) {
+            log.message_log(" Error: cannot open file");
+            std::cout << "Failed to open BMP file." << std::endl;
+            return;
+        }
 
-     // Читаем данные пикселей
-     for (int y = height - 1; y >= 0; --y) { // BMP хранит данные снизу вверх
-         for (int x = 0; x < width; ++x) {
-             unsigned char b = bmpFile.get(); // Читаем B
-             unsigned char g = bmpFile.get(); // Читаем G
-             unsigned char r = bmpFile.get(); // Читаем R
-             double color = (r + g + b) / 3;
-             field.Mat[y][x] = value; // Обновляем матрицу значений
-         }
-         bmpFile.ignore((4 - (width * 3) % 4) % 4); // Пропускаем паддинг
-     }
-     bmpFile.close();
- }
+        if (header.bfType != 0x4D42) { // Проверка "BM"
+            log.message_log(" Error: file is not bmp");
+            std::cout << "File is not bmp!" << std::endl;
+            file.close();
+            return;
+        }
+        // Читаем заголовок BMP
+        unsigned char header[54];
+        bmpFile.read(reinterpret_cast<char*>(header), 54);
+        // Получаем ширину и высоту изображения
+        int width = header[18] | (header[19] << 8) | (header[20] << 16) | (header[21] << 24);
+        int height = header[22] | (header[23] << 8) | (header[24] << 16) | (header[25] << 24);
+
+        // Читаем данные пикселей
+        for (int y = height - 1; y >= 0; --y) { // BMP хранит данные снизу вверх
+            for (int x = 0; x < width; ++x) {
+                unsigned char b = bmpFile.get(); // Читаем B
+                unsigned char g = bmpFile.get(); // Читаем G
+                unsigned char r = bmpFile.get(); // Читаем R
+                double color = (r + g + b) / 3;
+                field.Mat[y][x] = value; // Обновляем матрицу значений
+            
+                bmpFile.ignore((4 - (width * 3) % 4) % 4); // Пропускаем паддинг
+            }
+            bmpFile.close();
+        }
+    }
+
     void DO_SLICE(){
         int height;
         log.message_log("DO_CUT:");
@@ -1005,6 +1018,7 @@ class Interface{
     void greeting(){
         std::cout << "List of commands:"<<std::endl;
         std::cout << " init( /k/f) - create field \n g(k/f) - add Gaussian \n generate - overlay Gaussians to the field \n gnuplot( /f) - create plot \n bmp( /f) - create BMP file "<<std::endl;
+        std::cout
         std::cout << " slice - make a cut of current field" << std::endl;
         std::cout << " k_means - applyind k_means method to current field" << std::endl;
         std::cout << " k_m(bmp) - saving to bmp\n" << std::endl;
@@ -1033,6 +1047,8 @@ class Interface{
         else if(command == "k_m(bmp)"){control.SAVE_K_MEANS_TO_BMP();std::cout<<"K-Means was saved to bmp"<<std::endl;return 1;}
         else if(command == "k_means"){control.DO_K_MEANS();std::cout<<"Method k_means was applied"<<std::endl;return 1;}
         else if(command == "slice"){control.DO_SLICE();std::cout<<"The cut was made"<<std::endl;return 1;}
+        else if(command == "read_bmp"){control.READ_BMP(control.field);return 1;}
+
         else{
             std::cout<<"This command is not in the list of commands!"<<std::endl;
             execute_command();
