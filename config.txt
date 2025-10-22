@@ -1,0 +1,17 @@
+fieldWidth 500
+fieldHeight 500
+defaultX 250
+defaultY 250
+defaultSx 10.0
+defaultSy 10.0
+defaultH 128.0
+Noise 7
+R 5
+pitch 70
+roll 70
+epsilon 0.01
+logFileNameInterface interface_logs.txt
+logFileNameControl control_logs.txt
+loggingInterfaceEnabled true
+loggingControlEnabled true
+
